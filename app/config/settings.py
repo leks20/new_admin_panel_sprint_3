@@ -16,11 +16,11 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
-    POSTGRES_PORT: str = "5432"
+    POSTGRES_PORT: int = 5432
 
     DJANGO_LOG_LEVEL: str = "INFO"
 
-    PAGE_SIZE: str = "50"
+    PAGE_SIZE: int = 50
 
     class Config:
         env_file = os.path.join(BASE_DIR, ".env")

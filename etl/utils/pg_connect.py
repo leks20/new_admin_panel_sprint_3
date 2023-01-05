@@ -1,4 +1,3 @@
-import logging
 import time
 from contextlib import contextmanager
 from typing import Any
@@ -7,9 +6,7 @@ from typing import Generator
 import psycopg2
 from config import settings
 from psycopg2.extras import DictCursor
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from utils.logger import logger
 
 
 @contextmanager

@@ -1,13 +1,9 @@
-import logging
 from typing import Any
 from typing import Generator
 
 import psycopg2
 from psycopg2.extensions import cursor
-
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+from utils.logger import logger
 
 
 class PostgresMerger:

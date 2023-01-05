@@ -1,13 +1,10 @@
-import logging
 from typing import Any
 from typing import Generator
 
 import psycopg2
 from psycopg2.extensions import cursor
+from utils.logger import logger
 from utils.state import State
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 
 class PostgresEnricher:
@@ -17,13 +14,14 @@ class PostgresEnricher:
         state: State,
         upload_filmworks_batch: int,
         person_ids_statement: str | None = None,
-        with_no_persons: bool = False,
+        genre_ids_statement: str | None = None,
+        with_no_persons_and_genres: bool = False,
     ) -> Generator[Any, None, None]:
 
         try:
             modified = state.get_state("filmwork_modified")
 
-            if with_no_persons:
+            if with_no_persons_and_genres:
                 curs.execute(
                     f"""
                     SELECT fw.id, fw.updated_at
@@ -36,9 +34,7 @@ class PostgresEnricher:
                     """
                 )
 
-                while rows_data := curs.fetchmany(upload_filmworks_batch):
-                    yield [row[0] for row in rows_data]
-            else:
+            elif person_ids_statement:
                 curs.execute(
                     f"""
                     SELECT fw.id, fw.updated_at
@@ -49,8 +45,22 @@ class PostgresEnricher:
                     ORDER BY fw.updated_at;
                     """
                 )
-                while rows_data := curs.fetchmany(upload_filmworks_batch):
-                    yield [row[0] for row in rows_data]
+
+            elif genre_ids_statement:
+                curs.execute(
+                    f"""
+                    SELECT fw.id, fw.updated_at
+                    FROM content.film_work fw
+                    LEFT JOIN content.genre_film_work gfw ON gfw.film_work_id = fw.id
+                    WHERE gfw.genre_id IN {genre_ids_statement} AND
+                        fw.updated_at > '{modified}'
+                    ORDER BY fw.updated_at;
+                    """
+                )
+
+            while rows_data := curs.fetchmany(upload_filmworks_batch):
+                modified = rows_data[-1][-1]
+                yield [row[0] for row in rows_data], modified
 
         except psycopg2.Error as error:
             logger.error("Failed to get filmworks ids", error)

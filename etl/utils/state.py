@@ -5,7 +5,7 @@ from typing import Any
 
 
 def json_serial(obj: Any) -> Any:
-    if isinstance(obj, (datetime)):
+    if isinstance(obj, datetime):
         return obj.isoformat()
 
 
@@ -64,6 +64,9 @@ def start_state() -> State:
 
     if not state.get_state("person_modified"):
         state.set_state("person_modified", datetime.min)
+
+    if not state.get_state("genre_modified"):
+        state.set_state("genre_modified", datetime.min)
 
     if not state.get_state("filmwork_modified"):
         state.set_state("filmwork_modified", datetime.min)
